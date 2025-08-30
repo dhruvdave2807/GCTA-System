@@ -1,0 +1,21 @@
+id,district,threat,predicted_date,severity,notification
+1,Navsari,Illegal Dumping,31-08-2025 10:05,Low,⚠️ Illegal Dumping predicted near Navsari. Severity: Low. Take precautionary measures.
+2,Surat,Algal Bloom,31-08-2025 14:05,Critical,⚠️ Algal Bloom predicted near Surat. Severity: Critical. Take precautionary measures.
+3,Jamnagar,Coastal Erosion,31-08-2025 11:05,Low,⚠️ Coastal Erosion predicted near Jamnagar. Severity: Low. Take precautionary measures.
+4,Porbandar,Illegal Dumping,31-08-2025 09:05,Critical,⚠️ Illegal Dumping predicted near Porbandar. Severity: Critical. Take precautionary measures.
+5,Kutch,Illegal Dumping,31-08-2025 17:05,Critical,⚠️ Illegal Dumping predicted near Kutch. Severity: Critical. Take precautionary measures.
+6,Bhavnagar,Algal Bloom,31-08-2025 08:05,High,⚠️ Algal Bloom predicted near Bhavnagar. Severity: High. Take precautionary measures.
+7,Porbandar,Cyclonic Activity,01-09-2025 10:05,Low,⚠️ Cyclonic Activity predicted near Porbandar. Severity: Low. Take precautionary measures.
+8,Bhavnagar,Coastal Erosion,31-08-2025 10:00,High,⚠️ Coastal Erosion predicted near Bhavnagar. Severity: High. Take precautionary measures.
+9,Valsad,Illegal Dumping,31-08-2025 14:00,High,⚠️ Illegal Dumping predicted near Valsad. Severity: High. Take precautionary measures.
+10,Kutch,Cyclonic Activity,31-08-2025 17:00,High,⚠️ Cyclonic Activity predicted near Kutch. Severity: High. Take precautionary measures.
+11,Porbandar,Storm Surge,31-08-2025 09:00,High,⚠️ Storm Surge predicted near Porbandar. Severity: High. Take precautionary measures.
+12,Navsari,Algal Bloom,01-09-2025 10:00,Medium,⚠️ Algal Bloom predicted near Navsari. Severity: Medium. Take precautionary measures.
+13,Jamnagar,Cyclonic Activity,31-08-2025 12:00,Critical,⚠️ Cyclonic Activity predicted near Jamnagar. Severity: Critical. Take precautionary measures.
+14,Jamnagar,Coastal Erosion,02-09-2025 07:05,Critical,⚠️ Coastal Erosion predicted near Jamnagar. Severity: Critical. Take precautionary measures.
+15,Navsari,Illegal Dumping,02-09-2025 09:05,Medium,⚠️ Illegal Dumping predicted near Navsari. Severity: Medium. Take precautionary measures.
+16,Porbandar,Coastal Erosion,031-08-2025  18:05:00,Critical,⚠️ Coastal Erosion predicted near Porbandar. Severity: Critical. Take precautionary measures.
+17,Navsari,Storm Surge,31-08-2025 01:05,Low,⚠️ Storm Surge predicted near Navsari. Severity: Low. Take precautionary measures.
+18,Jamnagar,Cyclonic Activity,01-09-2025 20:05,High,⚠️ Cyclonic Activity predicted near Jamnagar. Severity: High. Take precautionary measures.
+19,Jamnagar,Storm Surge,31-08-2025 23:05,Low,⚠️ Storm Surge predicted near Jamnagar. Severity: Low. Take precautionary measures.
+20,Porbandar,Illegal Dumping,01-09-2025 18:05,Low,⚠️ Illegal Dumping predicted near Porbandar. Severity: Low. Take precautionary measures.

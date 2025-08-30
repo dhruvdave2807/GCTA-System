@@ -1413,14 +1413,35 @@ const AuthorityDashboard: React.FC<{ user: UserProfile }> = ({ user }) => {
         setActiveAlerts(prev => prev.filter(a => a.id !== alertId));
     };
 
+    // Instead, use the form data passed from AlertCreationForm:
     const handleCreateAlert = async (alertData: Omit<ThreatAlert, 'id' | 'timestamp'>) => {
+        const recipient = user.phoneNumber || "+918734095603";
+        const { type, level, location, message } = alertData;
+        const district = location.district || "";
+        const city = location.city || "";
+        const area = location.area || "";
+
         try {
+            const response = await fetch('http://localhost:5000/api/send-alert', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    recipient,
+                    threat_type: type,
+                    location: `${district}, ${city}, ${area}`,
+                    level,
+                    message // <-- Add this
+                })
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to send SMS');
+            }
+
             await createAlert(alertData, user);
-            setShowCreateAlert(false);
-            alert('Alert created successfully! SMS notifications will be sent to affected users.');
-        } catch (error) {
-            console.error('Error creating alert:', error);
-            alert('Failed to create alert. Please try again.');
+            // Optionally show feedback/UI updates here
+        } catch (error: any) {
+            alert(error.message || 'Failed to create alert. Please try again.');
         }
     };
 
@@ -1539,6 +1560,7 @@ const ReportForm: React.FC<{
             return;
         } else {
             setContactError('');
+       
         }
 
         if (!description.trim() || !district || !city || !area.trim()) {
