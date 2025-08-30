@@ -1,0 +1,5 @@
+{
+  "name": "Gujarat Coastal Threat Alert System",
+  "description": "A comprehensive platform for monitoring coastal threats in Gujarat, enabling authorities to manage alerts and the public to submit citizen reports. Features role-based dashboards, a real-time interactive map, and data visualizations.",
+  "requestFramePermissions": []
+}
