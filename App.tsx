@@ -1422,7 +1422,7 @@ const AuthorityDashboard: React.FC<{ user: UserProfile }> = ({ user }) => {
         const area = location.area || "";
 
         try {
-            const response = await fetch('https://gcta-system.onrender.com/api/send-alert', {
+            const response = await fetch('http://localhost:5000/api/send-alert', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1437,7 +1437,6 @@ const AuthorityDashboard: React.FC<{ user: UserProfile }> = ({ user }) => {
             if (!response.ok) {
                 throw new Error(result.error || 'Failed to send SMS');
             }
-        
 
             await createAlert(alertData, user);
             // Optionally show feedback/UI updates here
