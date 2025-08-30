@@ -5,6 +5,13 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
+@app.route("/")
+def home():
+    return jsonify({
+        "status": "OK",
+        "message": "Gujarat Coastal Threat Alert System Backend is Live 🌊🚨"
+    })
+
 @app.route('/api/send-alert', methods=['POST'])
 def send_alert():
     data = request.json
