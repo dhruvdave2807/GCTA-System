@@ -3,6 +3,10 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from './src/firebase';
 
+// Import external components
+import ReportForm from './src/components/ReportForm';
+import AdminReportsDashboard from './src/components/AdminReportsDashboard';
+
 // DECLARE GLOBAL VARIABLES FOR TYPESCRIPT
 declare const L: any;
 declare const Chart: any;
@@ -23,6 +27,12 @@ enum ThreatLevel {
   Emergency = 'Emergency',
 }
 
+enum Language {
+  English = 'en',
+  Hindi = 'hi',
+  Gujarati = 'gu'
+}
+
 interface UserProfile {
   uid: string;
   email: string | null;
@@ -32,6 +42,7 @@ interface UserProfile {
   role: UserRole;
   contactNumber?: string; // From SmartFormAssistant
   structuredLocation?: string; // From SmartFormAssistant
+  language?: Language; // User's preferred language
 }
 
 interface ThreatAlert {
@@ -143,6 +154,237 @@ const GUJARAT_DISTRICTS: Record<string, string[]> = {
     'Rajkot': ['Rajkot City', 'Gondal', 'Jetpur', 'Dhoraji'],
     'Surat': ['Surat City', 'Bardoli', 'Mandvi', 'Olpad'],
     'Vadodara': ['Vadodara City', 'Dabhoi', 'Padra', 'Savli'],
+};
+
+// ========= TRANSLATIONS =========
+
+const translations = {
+  [Language.English]: {
+    appTitle: "Gujarat Coastal Threat Alert System",
+    search: "Search",
+    notifications: "Notifications",
+    noNotifications: "No new notifications.",
+    logout: "Logout",
+    settings: "Settings",
+    profile: "Profile",
+    changePassword: "Change Password",
+    language: "Language",
+    save: "Save",
+    cancel: "Cancel",
+    close: "Close",
+    fullName: "Full Name",
+    email: "Email Address",
+    phoneNumber: "Phone Number",
+    location: "Location",
+    role: "Role",
+    updateProfile: "Update Profile",
+    profileUpdated: "Profile updated successfully!",
+    currentPassword: "Current Password",
+    newPassword: "New Password",
+    confirmPassword: "Confirm New Password",
+    passwordChanged: "Password changed successfully!",
+    passwordsNotMatch: "Passwords do not match!",
+    selectLanguage: "Select Language",
+    english: "English",
+    hindi: "हिंदी",
+    gujarati: "ગુજરાતી",
+    languageChanged: "Language changed successfully!",
+    welcome: "Welcome",
+    signIn: "Sign In",
+    signUp: "Sign Up",
+    createAccount: "Create Account",
+    alreadyHaveAccount: "Already have an account? Sign in",
+    dontHaveAccount: "Don't have an account? Sign up",
+    threatOverview: "Threat Overview",
+    createAlert: "Create Alert",
+    activeAlerts: "Active Alerts",
+    citizenReports: "Citizen Reports",
+    report: "Report",
+    loading: "Loading...",
+    error: "Error",
+    success: "Success",
+    submit: "Submit",
+    delete: "Delete",
+    edit: "Edit",
+    view: "View",
+    // Additional keys from the comprehensive translation system
+    title: "Gujarat Coastal Threat Alert System",
+    searchCity: "Search city in Gujarat...",
+    reportFor: "Report for",
+    downloadReport: "Download Report (CSV)",
+    backToDashboard: "← Back to Dashboard",
+    currentCoastalCondition: "Current Coastal Condition",
+    noActiveAlerts: "No active alerts reported for this city.",
+    historyData: "History Data: Blue Carbon Decrease",
+    noHistoricalData: "No historical data available.",
+    detailedHistory: "Detailed History for",
+    noDetailedHistory: "No detailed history available for this city.",
+    alertType: "Alert Type",
+    threatLevel: "Threat Level",
+    message: "Message",
+    district: "District",
+    city: "City/Town",
+    area: "Area/Colony",
+    description: "Description",
+    contactNumber: "Contact Number (Optional)",
+    locationDetailsRequired: "Location Details (Required)",
+    selectDistrict: "Select District",
+    selectCity: "Select City/Town",
+    areaPlaceholder: "Area / Colony / Society Name",
+    mapPinLocation: "Map Pin Location",
+    submitReport: "Submit Report",
+    alertCreated: "Alert created successfully! SMS notifications will be sent to affected users.",
+    reportSubmitted: "Report submitted (demo mode)!",
+    fillAllFields: "Please fill out all required fields.",
+    fillAllFieldsWithLocation: "Please fill out all required fields, including description and full location details.",
+    contactNumberError: "Contact number must be exactly 10 digits.",
+    failedToCreateAlert: "Failed to create alert. Please try again.",
+    failedToCreateAccount: "Failed to create account. Please try again.",
+    userProfileNotFound: "User profile not found. Please contact support.",
+    failedToSignIn: "Failed to sign in. Please check your credentials.",
+    errorSavingForm: "Error saving form data:",
+    confirmLanguageChange: "Confirm Language Change",
+    languageChangeMessage: "Are you sure you want to change the language to",
+    languageChangeDescription: "The entire application interface will be updated to display in",
+    confirm: "Confirm",
+    cancelLanguage: "Cancel",
+    languageChangedMessage: "The application will now display in",
+    back: "Back",
+    locationDetails: "Location Details",
+    signInButton: "Sign In",
+    createAccountButton: "Create Account",
+    completeProfile: "Complete Your Profile",
+    contactDetails: "Please provide your contact details and location information",
+    backToSignUp: "← Back to Sign Up"
+  },
+  [Language.Hindi]: {
+    appTitle: "गुजरात तटीय खतरा अलर्ट सिस्टम",
+    search: "खोजें",
+    notifications: "सूचनाएं",
+    noNotifications: "कोई नई सूचना नहीं।",
+    logout: "लॉगआउट",
+    settings: "सेटिंग्स",
+    profile: "प्रोफाइल",
+    changePassword: "पासवर्ड बदलें",
+    language: "भाषा",
+    save: "सहेजें",
+    cancel: "रद्द करें",
+    close: "बंद करें",
+    fullName: "पूरा नाम",
+    email: "ईमेल पता",
+    phoneNumber: "फोन नंबर",
+    location: "स्थान",
+    role: "भूमिका",
+    updateProfile: "प्रोफाइल अपडेट करें",
+    profileUpdated: "प्रोफाइल सफलतापूर्वक अपडेट किया गया!",
+    currentPassword: "वर्तमान पासवर्ड",
+    newPassword: "नया पासवर्ड",
+    confirmPassword: "नया पासवर्ड की पुष्टि करें",
+    passwordChanged: "पासवर्ड सफलतापूर्वक बदला गया!",
+    passwordsNotMatch: "पासवर्ड मेल नहीं खाते!",
+    selectLanguage: "भाषा चुनें",
+    english: "English",
+    hindi: "हिंदी",
+    gujarati: "ગુજરાતી",
+    languageChanged: "भाषा सफलतापूर्वक बदली गई!",
+    welcome: "स्वागत है",
+    signIn: "साइन इन करें",
+    signUp: "साइन अप करें",
+    createAccount: "खाता बनाएं",
+    alreadyHaveAccount: "पहले से खाता है? साइन इन करें",
+    dontHaveAccount: "खाता नहीं है? साइन अप करें",
+    threatOverview: "खतरा अवलोकन",
+    createAlert: "अलर्ट बनाएं",
+    activeAlerts: "सक्रिय अलर्ट",
+    citizenReports: "नागरिक रिपोर्ट",
+    report: "रिपोर्ट",
+    loading: "लोड हो रहा है...",
+    error: "त्रुटि",
+    success: "सफल",
+    submit: "सबमिट करें",
+    delete: "हटाएं",
+    edit: "संपादित करें",
+    view: "देखें"
+  },
+  [Language.Gujarati]: {
+    appTitle: "ગુજરાત તટીય ધમકી સતર્કતા સિસ્ટમ",
+    search: "શોધો",
+    notifications: "સૂચનો",
+    noNotifications: "કોઈ નવી સૂચના નથી.",
+    logout: "લૉગઆઉટ",
+    settings: "સેટિંગ્સ",
+    profile: "પ્રોફાઇલ",
+    changePassword: "પાસવર્ડ બદલો",
+    language: "ભાષા",
+    save: "સાચવો",
+    cancel: "રદ કરો",
+    close: "બંધ કરો",
+    fullName: "પૂરું નામ",
+    email: "ઈમેલ સરનામું",
+    phoneNumber: "ફોન નંબર",
+    location: "સ્થાન",
+    role: "ભૂમિકા",
+    updateProfile: "પ્રોફાઇલ અપડેટ કરો",
+    profileUpdated: "પ્રોફાઇલ સફળતાપૂર્વક અપડેટ કર્યું!",
+    currentPassword: "વર્તમાન પાસવર્ડ",
+    newPassword: "નવો પાસવર્ડ",
+    confirmPassword: "નવા પાસવર્ડની પુષ્ટિ કરો",
+    passwordChanged: "પાસવર્ડ સફળતાપૂર્વક બદલ્યું!",
+    passwordsNotMatch: "પાસવર્ડ મેળ ખાતા નથી!",
+    selectLanguage: "ભાષા પસંદ કરો",
+    english: "English",
+    hindi: "हिंदी",
+    gujarati: "ગુજરાતી",
+    languageChanged: "ભાષા સફળતાપૂર્વક બદલી!",
+    welcome: "સ્વાગત છે",
+    signIn: "સાઇન ઇન કરો",
+    signUp: "સાઇન અપ કરો",
+    createAccount: "એકાઉન્ટ બનાવો",
+    alreadyHaveAccount: "પહેલાથી એકાઉન્ટ છે? સાઇન ઇન કરો",
+    dontHaveAccount: "એકાઉન્ટ નથી? સાઇન અપ કરો",
+    threatOverview: "ધમકીનો અવલોકન",
+    createAlert: "અલર્ટ બનાવો",
+    activeAlerts: "સક્રિય અલર્ટ",
+    citizenReports: "નાગરિક રિપોર્ટ",
+    report: "રિપોર્ટ",
+    loading: "લોડ થઈ રહ્યું છે...",
+    error: "ભૂલ",
+    success: "સફળ",
+    submit: "સબમિટ કરો",
+    delete: "કાઢી નાખો",
+    edit: "સંપાદિત કરો",
+    view: "જુઓ"
+  }
+};
+
+// ========= LANGUAGE MANAGEMENT =========
+
+const useLanguage = () => {
+  const [currentLanguage, setCurrentLanguage] = useState<Language>(Language.English);
+
+  const t = (key: string): string => {
+    return translations[currentLanguage][key] || key;
+  };
+
+  const changeLanguage = (language: Language) => {
+    setCurrentLanguage(language);
+    localStorage.setItem('preferredLanguage', language);
+  };
+
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage') as Language;
+    if (savedLanguage && Object.values(Language).includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  return { 
+    currentLanguage, 
+    language: currentLanguage, // Add this for compatibility
+    t, 
+    changeLanguage,
+    setLanguage: setCurrentLanguage // Add this for compatibility
+  };
 };
 
 // ========= HELPER FUNCTIONS =========
@@ -455,6 +697,13 @@ const BellIcon: React.FC<{ className?: string }> = ({ className }) => (
     </svg>
 );
 
+const SettingsIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+);
+
 const ExclamationTriangleIcon: React.FC<{ className?: string; level: ThreatLevel }> = ({ className, level }) => {
     const color = {
         [ThreatLevel.Warning]: 'text-yellow-400',
@@ -494,20 +743,315 @@ const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: string; chi
   );
 };
 
+// ========= SETTINGS COMPONENTS =========
+
+const ProfileModal: React.FC<{ 
+  isOpen: boolean; 
+  onClose: () => void; 
+  user: UserProfile; 
+  onUpdateProfile: (updatedProfile: Partial<UserProfile>) => void;
+  t: (key: string) => string;
+}> = ({ isOpen, onClose, user, onUpdateProfile, t }) => {
+  const [formData, setFormData] = useState({
+    name: user.name,
+    phoneNumber: user.phoneNumber,
+    locationDetails: user.locationDetails
+  });
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      await onUpdateProfile(formData);
+      setMessage({ type: 'success', text: t('profileUpdated') });
+      setTimeout(() => onClose(), 2000);
+    } catch (error) {
+      setMessage({ type: 'error', text: t('error') });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={t('profile')}>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">{t('fullName')}</label>
+          <input
+            type="text"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">{t('email')}</label>
+          <input
+            type="email"
+            value={user.email || ''}
+            disabled
+            className="w-full px-3 py-2 bg-gray-600 border border-gray-600 rounded-md text-gray-400"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">{t('phoneNumber')}</label>
+          <input
+            type="tel"
+            value={formData.phoneNumber}
+            onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">{t('location')}</label>
+          <input
+            type="text"
+            value={formData.locationDetails}
+            onChange={(e) => setFormData({ ...formData, locationDetails: e.target.value })}
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">{t('role')}</label>
+          <input
+            type="text"
+            value={user.role}
+            disabled
+            className="w-full px-3 py-2 bg-gray-600 border border-gray-600 rounded-md text-gray-400"
+          />
+        </div>
+        {message && (
+          <div className={`p-3 rounded-md ${message.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+            {message.text}
+          </div>
+        )}
+        <div className="flex space-x-3 pt-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors"
+          >
+            {t('cancel')}
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors disabled:bg-blue-800 disabled:cursor-not-allowed"
+          >
+            {loading ? <Spinner /> : t('updateProfile')}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+};
+
+const PasswordModal: React.FC<{ 
+  isOpen: boolean; 
+  onClose: () => void; 
+  t: (key: string) => string;
+}> = ({ isOpen, onClose, t }) => {
+  const [formData, setFormData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage(null);
+
+    if (formData.newPassword !== formData.confirmPassword) {
+      setMessage({ type: 'error', text: t('passwordsNotMatch') });
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { updatePassword } = await import('firebase/auth');
+      const { auth } = await import('./src/firebase');
+      
+      if (auth.currentUser) {
+        await updatePassword(auth.currentUser, formData.newPassword);
+        setMessage({ type: 'success', text: t('passwordChanged') });
+        setTimeout(() => onClose(), 2000);
+      }
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.message || t('error') });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={t('changePassword')}>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">{t('currentPassword')}</label>
+          <input
+            type="password"
+            value={formData.currentPassword}
+            onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">{t('newPassword')}</label>
+          <input
+            type="password"
+            value={formData.newPassword}
+            onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+            minLength={6}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">{t('confirmPassword')}</label>
+          <input
+            type="password"
+            value={formData.confirmPassword}
+            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+            minLength={6}
+          />
+        </div>
+        {message && (
+          <div className={`p-3 rounded-md ${message.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+            {message.text}
+          </div>
+        )}
+        <div className="flex space-x-3 pt-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors"
+          >
+            {t('cancel')}
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors disabled:bg-blue-800 disabled:cursor-not-allowed"
+          >
+            {loading ? <Spinner /> : t('save')}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+};
+
+const LanguageModal: React.FC<{ 
+  isOpen: boolean; 
+  onClose: () => void; 
+  currentLanguage: Language;
+  onLanguageChange: (language: Language) => void;
+  t: (key: string) => string;
+}> = ({ isOpen, onClose, currentLanguage, onLanguageChange, t }) => {
+  const [message, setMessage] = useState<{ type: 'success', text: string } | null>(null);
+
+  const handleLanguageChange = (language: Language) => {
+    onLanguageChange(language);
+    setMessage({ type: 'success', text: t('languageChanged') });
+    setTimeout(() => onClose(), 1500);
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={t('selectLanguage')}>
+      <div className="space-y-4">
+        <div className="grid gap-3">
+          <button
+            onClick={() => handleLanguageChange(Language.English)}
+            className={`p-4 rounded-lg border-2 transition-colors ${
+              currentLanguage === Language.English 
+                ? 'border-blue-500 bg-blue-600 text-white' 
+                : 'border-gray-600 bg-gray-700 text-gray-300 hover:border-gray-500'
+            }`}
+          >
+            <div className="font-semibold">{t('english')}</div>
+            <div className="text-sm opacity-75">English</div>
+          </button>
+          <button
+            onClick={() => handleLanguageChange(Language.Hindi)}
+            className={`p-4 rounded-lg border-2 transition-colors ${
+              currentLanguage === Language.Hindi 
+                ? 'border-blue-500 bg-blue-600 text-white' 
+                : 'border-gray-600 bg-gray-700 text-gray-300 hover:border-gray-500'
+            }`}
+          >
+            <div className="font-semibold">{t('hindi')}</div>
+            <div className="text-sm opacity-75">हिंदी</div>
+          </button>
+          <button
+            onClick={() => handleLanguageChange(Language.Gujarati)}
+            className={`p-4 rounded-lg border-2 transition-colors ${
+              currentLanguage === Language.Gujarati 
+                ? 'border-blue-500 bg-blue-600 text-white' 
+                : 'border-gray-600 bg-gray-700 text-gray-300 hover:border-gray-500'
+            }`}
+          >
+            <div className="font-semibold">{t('gujarati')}</div>
+            <div className="text-sm opacity-75">ગુજરાતી</div>
+          </button>
+        </div>
+        {message && (
+          <div className="p-3 rounded-md bg-green-600">
+            {message.text}
+          </div>
+        )}
+        <div className="pt-4">
+          <button
+            onClick={onClose}
+            className="w-full px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors"
+          >
+            {t('close')}
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+// ========= UI & HELPER COMPONENTS =========
+
 const Header: React.FC<{ 
     user: UserProfile | null; 
     onLogout: () => void; 
     onSearch: (query: string) => void; 
     notifications: AppNotification[];
-}> = ({ user, onLogout, onSearch, notifications }) => {
+    onUpdateProfile: (updatedProfile: Partial<UserProfile>) => void;
+}> = ({ user, onLogout, onSearch, notifications, onUpdateProfile }) => {
     const [isSearchVisible, setIsSearchVisible] = useState(false);
     const [isNotifVisible, setIsNotifVisible] = useState(false);
+    const [isSettingsVisible, setIsSettingsVisible] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const searchContainerRef = useRef<HTMLDivElement>(null);
     const notifContainerRef = useRef<HTMLDivElement>(null);
+    const settingsContainerRef = useRef<HTMLDivElement>(null);
     const blueCarbonData = useBlueCarbonData();
     const citiesWithData = new Set(blueCarbonData.filter(d => d.state === 'Gujarat').map(event => event.city));
+    
+    // Settings modals state
+    const [showProfileModal, setShowProfileModal] = useState(false);
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [showLanguageModal, setShowLanguageModal] = useState(false);
+    
+    // Language management
+    const { currentLanguage, t, changeLanguage } = useLanguage();
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -517,11 +1061,13 @@ const Header: React.FC<{
             if (notifContainerRef.current && !notifContainerRef.current.contains(event.target as Node)) {
                 setIsNotifVisible(false);
             }
+            if (settingsContainerRef.current && !settingsContainerRef.current.contains(event.target as Node)) {
+                setIsSettingsVisible(false);
+            }
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
-
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -555,7 +1101,7 @@ const Header: React.FC<{
     
     return (
         <header className="absolute top-0 left-0 right-0 z-20 bg-gray-900 bg-opacity-80 backdrop-blur-sm p-4 flex justify-between items-center">
-            <h1 className="text-xl font-bold text-blue-400">Gujarat Coastal Threat Alert System</h1>
+            <h1 className="text-xl font-bold text-blue-400">{t('appTitle')}</h1>
             <div className="flex items-center space-x-2">
                 {user && (
                     <>
@@ -563,7 +1109,7 @@ const Header: React.FC<{
                         <button
                             onClick={() => setIsSearchVisible(!isSearchVisible)}
                             className="p-2 rounded-full hover:bg-gray-700 transition-colors"
-                            title="Search"
+                            title={t('search')}
                         >
                             <SearchIcon className="h-6 w-6 text-gray-300" />
                         </button>
@@ -594,39 +1140,89 @@ const Header: React.FC<{
                         )}
                     </div>
 
-                         <div ref={notifContainerRef} className="relative">
-                            <button
-                                onClick={() => setIsNotifVisible(!isNotifVisible)}
-                                className="p-2 rounded-full hover:bg-gray-700 transition-colors"
-                                title="Notifications"
-                            >
-                                <BellIcon className="h-6 w-6 text-gray-300" />
-                                {notifications.length > 0 && <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-gray-900"></span>}
-                            </button>
-                             {isNotifVisible && (
-                                <div className="absolute top-full right-0 mt-2 w-80 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-96 overflow-y-auto">
-                                   <div className="p-3 border-b border-gray-700">
-                                       <h4 className="font-semibold text-white">Notifications</h4>
-                                   </div>
-                                    {notifications.length > 0 ? (
-                                        <ul>
-                                            {notifications.map(notif => (
-                                                <li key={notif.id} className="border-b border-gray-700 last:border-b-0 p-3 flex items-start space-x-3">
-                                                    <ExclamationTriangleIcon level={notif.level} className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                                                    <div>
-                                                        <p className="font-semibold text-sm" style={{color: THREAT_LEVEL_COLORS[notif.level].border}}>{notif.level}</p>
-                                                        <p className="text-sm text-gray-300">{notif.message}</p>
-                                                        <p className="text-xs text-gray-500 mt-1">{new Date(notif.timestamp).toLocaleTimeString()}</p>
-                                                    </div>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <p className="p-4 text-center text-gray-400 text-sm">No new notifications.</p>
-                                    )}
+                    <div ref={notifContainerRef} className="relative">
+                        <button
+                            onClick={() => setIsNotifVisible(!isNotifVisible)}
+                            className="p-2 rounded-full hover:bg-gray-700 transition-colors"
+                            title={t('notifications')}
+                        >
+                            <BellIcon className="h-6 w-6 text-gray-300" />
+                            {notifications.length > 0 && <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-gray-900"></span>}
+                        </button>
+                        {isNotifVisible && (
+                            <div className="absolute top-full right-0 mt-2 w-80 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-96 overflow-y-auto">
+                               <div className="p-3 border-b border-gray-700">
+                                   <h4 className="font-semibold text-white">{t('notifications')}</h4>
+                               </div>
+                                {notifications.length > 0 ? (
+                                    <ul>
+                                        {notifications.map(notif => (
+                                            <li key={notif.id} className="border-b border-gray-700 last:border-b-0 p-3 flex items-start space-x-3">
+                                                <ExclamationTriangleIcon level={notif.level} className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                                                <div>
+                                                    <p className="font-semibold text-sm" style={{color: THREAT_LEVEL_COLORS[notif.level].border}}>{notif.level}</p>
+                                                    <p className="text-sm text-gray-300">{notif.message}</p>
+                                                    <p className="text-xs text-gray-500 mt-1">{new Date(notif.timestamp).toLocaleTimeString()}</p>
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p className="p-4 text-center text-gray-400 text-sm">{t('noNotifications')}</p>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    <div ref={settingsContainerRef} className="relative">
+                        <button
+                            onClick={() => setIsSettingsVisible(!isSettingsVisible)}
+                            className="p-2 rounded-full hover:bg-gray-700 transition-colors"
+                            title={t('settings')}
+                        >
+                            <SettingsIcon className="h-6 w-6 text-gray-300" />
+                        </button>
+                        {isSettingsVisible && (
+                            <div className="absolute top-full right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-lg">
+                                <div className="py-1">
+                                    <button
+                                        onClick={() => {
+                                            setShowProfileModal(true);
+                                            setIsSettingsVisible(false);
+                                        }}
+                                        className="w-full px-4 py-2 text-left text-gray-300 hover:bg-gray-700 transition-colors"
+                                    >
+                                        {t('profile')}
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setShowPasswordModal(true);
+                                            setIsSettingsVisible(false);
+                                        }}
+                                        className="w-full px-4 py-2 text-left text-gray-300 hover:bg-gray-700 transition-colors"
+                                    >
+                                        {t('changePassword')}
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setShowLanguageModal(true);
+                                            setIsSettingsVisible(false);
+                                        }}
+                                        className="w-full px-4 py-2 text-left text-gray-300 hover:bg-gray-700 transition-colors"
+                                    >
+                                        {t('language')}
+                                    </button>
+                                    <hr className="border-gray-700 my-1" />
+                                    <button
+                                        onClick={onLogout}
+                                        className="w-full px-4 py-2 text-left text-red-400 hover:bg-gray-700 transition-colors"
+                                    >
+                                        {t('logout')}
+                                    </button>
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        )}
+                    </div>
                     </>
                 )}
                 {user && (
@@ -635,16 +1231,34 @@ const Header: React.FC<{
                             <p className="text-sm font-medium text-white">{user.email}</p>
                             <p className="text-xs text-blue-300">{user.role}</p>
                         </div>
-                        <button
-                            onClick={onLogout}
-                            className="p-2 rounded-full hover:bg-gray-700 transition-colors"
-                            title="Logout"
-                        >
-                            <LogoutIcon className="h-6 w-6 text-red-400" />
-                        </button>
                     </div>
                 )}
             </div>
+
+            {/* Settings Modals */}
+            {user && (
+                <>
+                    <ProfileModal
+                        isOpen={showProfileModal}
+                        onClose={() => setShowProfileModal(false)}
+                        user={user}
+                        onUpdateProfile={onUpdateProfile}
+                        t={t}
+                    />
+                    <PasswordModal
+                        isOpen={showPasswordModal}
+                        onClose={() => setShowPasswordModal(false)}
+                        t={t}
+                    />
+                    <LanguageModal
+                        isOpen={showLanguageModal}
+                        onClose={() => setShowLanguageModal(false)}
+                        currentLanguage={currentLanguage}
+                        onLanguageChange={changeLanguage}
+                        t={t}
+                    />
+                </>
+            )}
         </header>
     );
 };
@@ -1422,7 +2036,7 @@ const AuthorityDashboard: React.FC<{ user: UserProfile }> = ({ user }) => {
         const area = location.area || "";
 
         try {
-            const response = await fetch('http://localhost:5000/api/send-alert', {
+            const response = await fetch('http://127.0.0.1:5000/api/send-alert', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1514,125 +2128,6 @@ const AuthorityDashboard: React.FC<{ user: UserProfile }> = ({ user }) => {
             </main>
         </div>
         </>
-    );
-};
-
-const ReportForm: React.FC<{
-    location: { lat: number; lng: number };
-    onSubmit: (reportData: Omit<CitizenReport, 'id' | 'timestamp' | 'reportedBy'>) => void;
-}> = ({ location, onSubmit }) => {
-    const [type, setType] = useState(CITIZEN_REPORT_TYPES[0]);
-    const [description, setDescription] = useState('');
-    const [contactNumber, setContactNumber] = useState('');
-    const [contactError, setContactError] = useState('');
-    const [district, setDistrict] = useState('');
-    const [city, setCity] = useState('');
-    const [area, setArea] = useState('');
-    const [citiesForDistrict, setCitiesForDistrict] = useState<string[]>([]);
-    const [submitting, setSubmitting] = useState(false);
-
-    const handleContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
-        if (value.length <= 10) {
-            setContactNumber(value);
-        }
-        if (contactError) {
-            setContactError('');
-        }
-    };
-
-    const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const selectedDistrict = e.target.value;
-        setDistrict(selectedDistrict);
-        setCity(''); // Reset city
-        if (selectedDistrict) {
-            setCitiesForDistrict(GUJARAT_DISTRICTS[selectedDistrict as keyof typeof GUJARAT_DISTRICTS] || []);
-        } else {
-            setCitiesForDistrict([]);
-        }
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (contactNumber && contactNumber.length !== 10) {
-            setContactError('Contact number must be exactly 10 digits.');
-            return;
-        } else {
-            setContactError('');
-       
-        }
-
-        if (!description.trim() || !district || !city || !area.trim()) {
-            alert('Please fill out all required fields, including description and full location details.');
-            return;
-        }
-        setSubmitting(true);
-        const structuredLocation = `${district} > ${city} > ${area.trim()}`;
-        
-        setTimeout(() => {
-            onSubmit({
-                type,
-                description,
-                location,
-                contactNumber: contactNumber || undefined,
-                structuredLocation,
-            });
-            setSubmitting(false);
-        }, 500);
-    };
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-                <label className="block text-sm font-medium text-gray-300">Threat Type</label>
-                <select value={type} onChange={e => setType(e.target.value)} className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                    {CITIZEN_REPORT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-300">Description</label>
-                <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} required className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
-            </div>
-             <div>
-                <label className="block text-sm font-medium text-gray-300">Contact Number (Optional)</label>
-                <input 
-                    type="tel" 
-                    value={contactNumber}
-                    onChange={handleContactChange}
-                    placeholder="10-digit mobile number"
-                    className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                />
-                {contactError && <p className="text-red-400 text-xs mt-1">{contactError}</p>}
-            </div>
-            <div>
-                 <label className="block text-sm font-medium text-gray-300">Location Details (Required)</label>
-                 <div className="mt-1 grid grid-cols-1 gap-y-3 sm:grid-cols-2 sm:gap-x-3">
-                     <select value={district} onChange={handleDistrictChange} required className="w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Select District</option>
-                        {Object.keys(GUJARAT_DISTRICTS).sort().map(d => <option key={d} value={d}>{d}</option>)}
-                    </select>
-                     <select value={city} onChange={e => setCity(e.target.value)} disabled={!district} required className="w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-600 disabled:cursor-not-allowed">
-                        <option value="">Select City/Town</option>
-                        {citiesForDistrict.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                 </div>
-                 <input 
-                    type="text" 
-                    value={area} 
-                    onChange={e => setArea(e.target.value)} 
-                    placeholder="Area / Colony / Society Name" 
-                    required
-                    className="mt-3 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                 />
-            </div>
-            <div className="text-sm text-gray-400">
-                Map Pin Location: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
-            </div>
-            <button type="submit" disabled={submitting} className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold text-white transition-colors disabled:bg-blue-800 disabled:cursor-not-allowed flex justify-center items-center">
-                {submitting ? <Spinner /> : 'Submit Report'}
-            </button>
-        </form>
     );
 };
 
@@ -1843,7 +2338,8 @@ const MainApp = () => {
                             locationDetails: userData.locationDetails,
                             role: userData.role,
                             contactNumber: userData.contactNumber,
-                            structuredLocation: userData.structuredLocation
+                            structuredLocation: userData.structuredLocation,
+                            language: userData.language
                         };
                         setUser(userProfile);
                     }
@@ -1865,7 +2361,7 @@ const MainApp = () => {
     const handleLogin = (userProfile: UserProfile) => {
         setLoading(true);
         setUser(userProfile);
-            setLoading(false);
+        setLoading(false);
     };
 
     const handleLogout = async () => {
@@ -1873,8 +2369,8 @@ const MainApp = () => {
             const { signOut } = await import('firebase/auth');
             const { auth } = await import('./src/firebase');
             await signOut(auth);
-        setUser(null);
-        setSearchCity(null);
+            setUser(null);
+            setSearchCity(null);
         } catch (error) {
             console.error('Logout error:', error);
         }
@@ -1888,6 +2384,24 @@ const MainApp = () => {
         setSearchCity(null);
     }
 
+    const handleUpdateProfile = async (updatedProfile: Partial<UserProfile>) => {
+        if (!user) return;
+        
+        try {
+            const { doc, updateDoc } = await import('firebase/firestore');
+            const { db } = await import('./src/firebase');
+            
+            const userDocRef = doc(db, 'users', user.uid);
+            await updateDoc(userDocRef, updatedProfile);
+            
+            // Update local state
+            setUser({ ...user, ...updatedProfile });
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            throw error;
+        }
+    };
+
     return (
         <div className="bg-gray-900 text-white min-h-screen">
             <NotificationToast notification={currentToast} onDismiss={dismissToast} />
@@ -1895,7 +2409,13 @@ const MainApp = () => {
                 <AuthScreen onLogin={handleLogin} />
             ) : (
                 <>
-                    <Header user={user} onLogout={handleLogout} onSearch={handleSearch} notifications={notifications} />
+                    <Header 
+                        user={user} 
+                        onLogout={handleLogout} 
+                        onSearch={handleSearch} 
+                        notifications={notifications} 
+                        onUpdateProfile={handleUpdateProfile}
+                    />
                     {searchCity ? (
                         <SearchResultsView city={searchCity} onClearSearch={clearSearch} />
                     ) : user.role === UserRole.Authority ? (
